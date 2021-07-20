@@ -1,0 +1,2 @@
+# GUInstallomator
+GUI for Installomator
