@@ -1,2 +1,13 @@
 
 .DS_Store
+build/InstallomatorT.app
+build/InstallomatorT.app/
+build/InstallomatorT.app/Icon
+build/InstallomatorT.app/Contents/Resources/Scripts/main.scpt
+build/InstallomatorT.app/Contents/Resources/description.rtfd/TXT.rtf
+build/InstallomatorT.app/Contents/Resources/applet.rsrc
+build/InstallomatorT.app/Contents/Resources/applet.icns
+build/InstallomatorT.app/Contents/PkgInfo
+build/InstallomatorT.app/Contents/MacOS/applet
+build/InstallomatorT.app/Contents/Info.plist
+build/InstallomatorT.app/Contents/_CodeSignature/CodeResources
