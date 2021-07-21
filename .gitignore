@@ -1,5 +1,7 @@
 
 .DS_Store
+build
+build/
 build/InstallomatorT.app
 build/InstallomatorT.app/
 build/InstallomatorT.app/Icon
