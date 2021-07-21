@@ -20,7 +20,7 @@ end tell
 activate
 set label to choose from list (paragraphs of (do shell script "/usr/local/Installomator/Installomator.sh | tail -n +2"))
 
-if label â‰  false then
+if label ­ false then
 	do shell script "rm /var/log/Installomator.log" with administrator privileges
 	do shell script "/usr/local/Installomator/Installomator.sh " & label with administrator privileges
 	
