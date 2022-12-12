@@ -6,7 +6,7 @@ I mostly use this on my test devices that are not (yet) managed and i want quick
 
 **Why Applescript?**
 
-I wanted to have a portable GUI script with TouchID (for administrator privileges). If i have time i will rewrite this in Swift. But for now it does not require codesigning and it works out of the box on 10.12+
+I wanted to have a portable GUI script with TouchID (for administrator privileges). If i have time i will rewrite this in Swift. But for now it does not require codesigning and it works out of the box on macOS 11+
 
 
 
