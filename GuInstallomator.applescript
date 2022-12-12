@@ -4,11 +4,12 @@
 --
 -- version: 12-12-2022
 --
--- This is a Quick and Dirty Applescript to install software on a macOS device using installomator
--- I mostly use this on my test devices that are not (yet) managed and i want quickly have some tools installed
+-- This is a Quick and Dirty Applescript to install software on a macOS device using installomator. 
+-- I mostly use this on my test devices that are not (yet) managed and i want quickly have some tools installed without having to reinstall installomator every time. 
+-- But you can also use it to quickly install/update software without having to open the terminal.
 --
 -- QUESTION: Why Applescript?
--- ANSWER: I wanted to have a portable GUI script with TouchID (for administrator privileges). If i have time i will rewrite this in Swift. But for now it does not require codesigning and it works out of the box on 10.12+
+-- ANSWER: I wanted to have a portable GUI script with TouchID (for administrator privileges). If i have time i will rewrite this in Swift. But for now it does not require codesigning and it works out of the box on macOS 11+
 --
 -- QUESTION: How does it work?
 -- ANSWER: Put it on an USB stick or Airdrop this applescript to a Mac. Doubleclick to open the script in Script Editor and press command + R to run the script.
