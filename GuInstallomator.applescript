@@ -2,7 +2,26 @@
 -- Quick and Dirty Applescript GUI for Installomator
 -- Sander Schram
 --
--- version: 19-07-2022
+-- version: 12-12-2022
+--
+-- This is a Quick and Dirty Applescript to install software on a macOS device using installomator
+-- I mostly use this on my test devices that are not (yet) managed and i want quickly have some tools installed
+--
+-- QUESTION: Why Applescript?
+-- ANSWER: I wanted to have a portable GUI script with TouchID (for administrator privileges). If i have time i will rewrite this in Swift. But for now it does not require codesigning and it works out of the box on 10.12+
+--
+-- QUESTION: How does it work?
+-- ANSWER: Put it on an USB stick or Airdrop this applescript to a Mac. Doubleclick to open the script in Script Editor and press command + R to run the script.
+--
+-- QUESTION: Does it require any preinstalled tools/scripts?
+-- ANSWER: GUIinstallomator will automatically install/update installomator or dockutil if needed
+--
+-- QUESTION:What does it do exactly?
+-- 1) Runs privileges.app (if installed) for admin privileges (i mostly work without admin privileges but i do have privileges installed)
+-- 2) Installs or updates Installomator
+-- 3) choose an installomator label from a gui dialog
+-- 4) use TouchID for administrator privileges
+-- 5) Put icon of installed application in Dock
 --
 
 -- FUNCTIONS
@@ -23,12 +42,8 @@ end installInstallomator
 -- MAIN APPLESCRIPT
 
 activate
-
-
-
-
 tell application "System Events"
-	-- run privileges
+	-- run privileges (if installed) for admin privileges
 	if (exists file "/Applications/Privileges.app/Contents/Resources/PrivilegesCLI") then
 		do shell script "echo 'guiinstallomator' | /Applications/Privileges.app/Contents/Resources/PrivilegesCLI --add"
 	end if
@@ -36,8 +51,6 @@ tell application "System Events"
 	-- Install Installomator if not already installed
 	set git_version to do shell script "curl -s https://api.github.com/repos/Installomator/Installomator/releases/latest | grep tag_name | cut -d: -f2 | sed 's/v//g' | cut -d'\"' -f2 | sed 's/release/.0/g'"
 	if not (exists file "/usr/local/Installomator/Installomator.sh") then
-		-- installomator not installed, start install
-		--display dialog "not installed"
 		my installInstallomator()
 	end if
 	
@@ -59,14 +72,13 @@ set label to choose from list (paragraphs of (do shell script "/usr/local/Instal
 
 if label ­ false then
 	-- Install app using installomator
-	do shell script "rm -f /var/log/Installomator.log" with administrator privileges
-	do shell script "/usr/local/Installomator/Installomator.sh " & label & " NOTIFY=silent" with administrator privileges
+	do shell script "/usr/local/Installomator/Installomator.sh " & label & " NOTIFY=silent > /tmp/guiinstallomator.log" with administrator privileges
 	
 	-- search app using "/Applications" in log
-	set appPath to "/" & (do shell script "cat /private/var/log/Installomator.log | grep 'found app at /' | cut -d',' -f1 | cut -d'/' -f2- | tail -n1")
+	set appPath to "/" & (do shell script "cat /tmp/guiinstallomator.log | grep 'found app at /' | cut -d',' -f1 | cut -d'/' -f2- | tail -n1")
 	if appPath = "/" then
 		-- search app path using "App name" in log
-		set appPath to "/Applications/" & (do shell script "cat /private/var/log/Installomator.log | grep 'Latest version of ' | awk 'BEGIN {FS=\" of \";}{print $2}' | awk 'BEGIN {FS=\" is \";}{print $1}'") & ".app"
+		set appPath to "/Applications/" & (do shell script "cat /tmp/guiinstallomator.log | grep 'Latest version of ' | awk 'BEGIN {FS=\" of \";}{print $2}' | awk 'BEGIN {FS=\" is \";}{print $1}'") & ".app"
 	end if
 	
 	-- Does app exist on this path?
@@ -85,4 +97,6 @@ if label ­ false then
 	end if
 	-- show end notification
 	display notification "End GuInstallomator - Label: " & label
+	
+	do shell script "rm /tmp/guiinstallomator.log" with administrator privileges
 end if
