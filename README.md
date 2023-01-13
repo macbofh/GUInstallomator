@@ -1,7 +1,7 @@
 # GUInstallomator
 GUI for Installomator
 
-This is a Quick and Dirty Applescript to install software on a macOS device using installomator.
+This is a Quick and Dirty Applescript to install software on a macOS device using installomator (https://github.com/Installomator/Installomator)
 I mostly use this on my test devices that are not (yet) managed and i want quickly have some tools installed without having to reinstall installomator every time. But you can also use it to quickly install/update software without having to open the terminal.
 
 **Why Applescript?**
