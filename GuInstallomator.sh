@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 #
 # GUI for Installomator
@@ -13,10 +13,19 @@
 #
 # I Personally put this script in the Script menu in the menubar
 #
+# Rewritten from Applescript. 
+# With help from https://github.com/Installomator/Installomator/blob/main/MDM/swiftdialog_example.sh
+#
 
+#
+
+# export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
 # Variables
 InstallomatorOptions="DEBUG=0 NOTIFY=silent LOGO=jamf"
+installomator="/usr/local/Installomator/Installomator.sh"
+dialog="/usr/local/bin/dialog"
+dialog_command_file="/var/tmp/dialog.log"
 
 
 # MARK: Functions
@@ -30,6 +39,49 @@ InstallInstallomator() {
 	rm /tmp/installomator.pkg
 }
 
+dialogUpdate() {
+    # $1: dialog command
+    local dcommand=$1
+
+    if [[ -n $dialog_command_file ]]; then
+        echo "$dcommand" >> $dialog_command_file
+        echo "Dialog: $dcommand"
+    fi
+}
+
+progressUpdate() {
+    # $1: progress text (optional)
+    local text=$1
+    itemCounter=$((itemCounter + 1))
+    dialogUpdate "progress: $itemCounter"
+    if [[ -n $text ]]; then
+        dialogUpdate "progresstext: $text"
+    fi
+}
+
+startItem() {
+    local description=$1
+
+    echo "Starting Item: $description"
+    dialogUpdate "listitem: $description: wait"
+    progressUpdate $description
+}
+
+cleanupAndExit() {
+    # kill caffeinate process
+    if [[ -n $caffeinatePID ]]; then
+        echo "killing caffeinate..."
+        kill $caffeinatePID
+    fi
+
+    # clean up tmp dir
+    if [[ -n $tmpDir && -d $tmpDir ]]; then
+        echo "removing tmpDir $tmpDir"
+        rm -rf $tmpDir
+    fi
+}
+
+
 
 # MARK: Main Script
 
@@ -42,9 +94,15 @@ if [[ ! -f /usr/local/Installomator/Installomator.sh ]] || [[ "$gitversion" != "
 	InstallInstallomator
 fi
 
-softwarelist=$(/usr/local/Installomator/Installomator.sh | tail -n +2 )
+
+if [ ! -f /usr/local/bin/dialog ]; then
+	/usr/local/Installomator/Installomator.sh dialog $InstallomatorOptions
+fi
+
+
+
+values=$(/usr/local/Installomator/Installomator.sh | tail -n +2 | tr '\n' ',')
 first=$(/usr/local/Installomator/Installomator.sh | head -n2 | tail -n1)
-values=$(echo $softwarelist | sed 's/ /,/g')
 
 answer=$(/usr/local/bin/dialog \
 -m "GuInstallomator" \
@@ -58,7 +116,12 @@ answer=$(/usr/local/bin/dialog \
 --selectdefault "$first"
 )
 
-label=$( echo $answer | cut -d":" -f2 | cut -d'"' -f2)
+
+installomatorlabel=$( echo $answer | head -n1 | cut -d":" -f2 | cut -d'"' -f2)
+
+echo $installomatorlabel
+
+
 
 if [ "$answer" != "" ]; then
 
@@ -66,12 +129,40 @@ if [ "$answer" != "" ]; then
 	if [ -f "/Applications/Privileges.app/Contents/Resources/PrivilegesCLI" ]; then
 		echo 'guinstallomator' | /Applications/Privileges.app/Contents/Resources/PrivilegesCLI --add
 	fi
-	sudo /usr/local/Installomator/Installomator.sh $label $InstallomatorOptions > /tmp/guinstallomator.log
 	
+
+	# display first screen
+	 $dialog --title "Installing $installomatorlabel" \
+			--message "Installing $installomatorlabel" \
+			--hideicon \
+			--mini \
+			--progress 100 \
+			--position bottomright \
+			--ontop \
+			--movable \
+			--commandfile $dialog_command_file & dialogPID=$!
+
+	sleep 0.1
+
+	echo $installomatorlabel
+
+
+
+	sudo /usr/local/Installomator/Installomator.sh $installomatorlabel DIALOG_CMD_FILE="$dialog_command_file" NOTIFY=silent > /tmp/guinstallomator.log
+
+	# clean up UI
+
+	dialogUpdate "progress: complete"
+	dialogUpdate "progresstext: Done"
+
+	sleep 0.5
+
+	dialogUpdate "quit:"
+
 	AppPath=$(cat /tmp/guinstallomator.log | grep "App(s) found" | tail -n1 | cut -d')' -f2 | cut -d':' -f2 | cut -c2-)
 	if [ -d "$AppPath" ]; then
 		if [ ! -f /usr/local/bin/dockutil ]; then
-			/usr/local/Installomator/Installomator.sh dockutil NOTIFY=silent
+			/usr/local/Installomator/Installomator.sh dockutil $InstallomatorOptions
 		fi
 		/usr/local/bin/dockutil --add $AppPath
 	fi
