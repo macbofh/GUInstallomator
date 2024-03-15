@@ -1,10 +1,10 @@
-#!/bin/zsh
+#!/bin/zsh --no-rcs
 
 #
 # GUI for Installomator
 # Sander Schram
 #
-# version: 19-11-2023
+# version: 15-03-2024
 #
 # This is a script using Swift Dialog to install software on a macOS device using installomator. 
 # I mostly use this on my test devices that are not (yet) managed and i want quickly have some
